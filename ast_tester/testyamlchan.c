@@ -31,6 +31,7 @@ static void test_native_encoding_roundtrip( int *status );
 static void test_sphmap_roundtrip( int *status );
 static void test_divide_roundtrip( int *status );
 static void test_rotate_sequence_3d_roundtrip( int *status );
+static void test_current_schema_versions( int *status );
 
 static int chrMatch( const char *a, const char *b ){
    int result = 0;
@@ -55,6 +56,7 @@ int main(){
    test_sphmap_roundtrip( status );
    test_divide_roundtrip( status );
    test_rotate_sequence_3d_roundtrip( status );
+   test_current_schema_versions( status );
 
    astEnd;
 
@@ -705,4 +707,38 @@ void test_rotate_sequence_3d_roundtrip( int *status ){
 
    if( *status != SAI__OK )
       printf( "rotate_sequence_3d and null-transform regression test failed\n" );
+}
+
+void test_current_schema_versions( int *status ){
+/* A WCS tagged with the newest published minor version of each schema must
+   read. MAKE_TEST refuses a minor version above its ceiling even when the
+   revision changed nothing this class reads, so a ceiling left behind the
+   published schemas rejects the whole object. */
+   AstFrameSet *fs;
+   AstYamlChan *ch;
+   const char *system;
+
+   if( *status != SAI__OK )
+      return;
+
+   ch = astYamlChan( NULL, NULL, " " );
+   astSet( ch, "SourceFile=%s/fixtures/programs/testyamlchan/"
+           "current_schema_versions.asdf", fixture_dir() );
+   fs = (AstFrameSet *) astRead( ch );
+   ch = astAnnul( ch );
+   if( !fs ) {
+      printf( "could not read a WCS using current schema versions\n" );
+      stopit( 120, status );
+      return;
+   }
+
+   system = astGetC( fs, "System" );
+   if( !chrMatch( system, "FK5" ) ){
+      printf( "System: got %s expected FK5\n", system ? system : "<none>" );
+      stopit( 121, status );
+   }
+   fs = astAnnul( fs );
+
+   if( *status != SAI__OK )
+      printf( "current schema version regression test failed\n" );
 }
