@@ -1,0 +1,30 @@
+#ASDF 1.0.0
+%YAML 1.1
+%TAG ! tag:stsci.edu:asdf/
+--- !core/asdf-1.1.0
+wcs: !<tag:stsci.edu:gwcs/wcs-1.0.0>
+  name: ''
+  steps:
+  - !<tag:stsci.edu:gwcs/step-1.0.0>
+    frame: !<tag:stsci.edu:gwcs/frame2d-1.0.0>
+      axes_names: [x, y]
+      axes_order: [0, 1]
+      axis_physical_types: ['custom:x', 'custom:y']
+      name: detector
+      unit: [!unit/unit-1.0.0 deg, !unit/unit-1.0.0 deg]
+    transform: !transform/identity-1.1.0 {n_dims: 2}
+  - !<tag:stsci.edu:gwcs/step-1.0.0>
+    frame: !<tag:stsci.edu:gwcs/celestial_frame-1.0.0>
+      axes_names: [az, alt]
+      axes_order: [0, 1]
+      axis_physical_types: [pos.az.azi, pos.az.alt]
+      name: world
+      reference_frame: !<tag:astropy.org:astropy/coordinates/frames/altaz-1.0.0>
+        frame_attributes:
+          obstime: !time/time-1.1.0 {value: '2020-01-01 00:00:00.000', format: iso, scale: utc}
+          location: !<tag:astropy.org:astropy/coordinates/earthlocation-1.0.0>
+            x: !unit/quantity-1.1.0 {value: -4554231.533, unit: m}
+            y: !unit/quantity-1.1.0 {value: 2816759.109, unit: m}
+            z: !unit/quantity-1.1.0 {value: -3454036.323, unit: m}
+      unit: [!unit/unit-1.0.0 deg, !unit/unit-1.0.0 deg]
+    transform: null

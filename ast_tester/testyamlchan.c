@@ -31,6 +31,7 @@ static void test_native_encoding_roundtrip( int *status );
 static void test_sphmap_roundtrip( int *status );
 static void test_divide_roundtrip( int *status );
 static void test_rotate_sequence_3d_roundtrip( int *status );
+static void test_earthlocation( int *status );
 
 static int chrMatch( const char *a, const char *b ){
    int result = 0;
@@ -55,6 +56,7 @@ int main(){
    test_sphmap_roundtrip( status );
    test_divide_roundtrip( status );
    test_rotate_sequence_3d_roundtrip( status );
+   test_earthlocation( status );
 
    astEnd;
 
@@ -705,4 +707,57 @@ void test_rotate_sequence_3d_roundtrip( int *status ){
 
    if( *status != SAI__OK )
       printf( "rotate_sequence_3d and null-transform regression test failed\n" );
+}
+
+void test_earthlocation( int *status ){
+/* A frame attribute holding an earthlocation must be read. IsA() dispatched
+   on the prefix "astropy/coordinates/earthlocation/", with a trailing
+   slash that the real class string does not have, so the branch was never
+   entered and the read failed on the location rather than on the dispatch.
+   The expected latitude and longitude are the geodetic position of the
+   geocentric x/y/z in the fixture. */
+   AstFrameSet *fs;
+   AstYamlChan *ch;
+   const char *obslat;
+   const char *obslon;
+   const char *system;
+
+   if( *status != SAI__OK )
+      return;
+
+   ch = astYamlChan( NULL, NULL, " " );
+   astSet( ch, "SourceFile=%s/fixtures/programs/testyamlchan/"
+           "altaz_earthlocation.asdf", fixture_dir() );
+   fs = (AstFrameSet *) astRead( ch );
+   ch = astAnnul( ch );
+   if( !fs ) {
+      printf( "could not read a frame carrying an earthlocation\n" );
+      stopit( 130, status );
+      return;
+   }
+
+   system = astGetC( fs, "System" );
+   if( !chrMatch( system, "AZEL" ) ){
+      printf( "System: got %s expected AZEL\n", system ? system : "<none>" );
+      stopit( 131, status );
+      fs = astAnnul( fs );
+      return;
+   }
+
+/* ObsLat and ObsLon are formatted attributes, so compare the strings. */
+   obslat = astGetC( fs, "ObsLat" );
+   obslon = astGetC( fs, "ObsLon" );
+
+   if( !chrMatch( obslat, "S32:59:54.26" ) ||
+       !chrMatch( obslon, "E148:15:48.64" ) ){
+      if( *status == SAI__OK )
+         printf( "observer position: got (%s, %s) expected "
+                 "(S32:59:54.26, E148:15:48.64)\n",
+                 obslat ? obslat : "<none>", obslon ? obslon : "<none>" );
+      stopit( 132, status );
+   }
+   fs = astAnnul( fs );
+
+   if( *status != SAI__OK )
+      printf( "earthlocation regression test failed\n" );
 }

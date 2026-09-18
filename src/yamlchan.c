@@ -5360,7 +5360,11 @@ static int IsA( AstKeyMap *km, const char *class, int *status ) {
             result = IsANDArray( km_class, status );
          }
 
-      } else if( !strncmp( km_class, "astropy/coordinates/earthlocation/", 34 ) ) {
+/* No trailing "/" here: an EarthLocation is written as
+   "astropy/coordinates/earthlocation-<version>", with no class component
+   after the schema path, so requiring the slash makes this branch
+   unreachable. 33 characters matches both spellings. */
+      } else if( !strncmp( km_class, "astropy/coordinates/earthlocation", 33 ) ) {
          if( !strcmp( "earthlocation", class ) ){
             result = IsAEarthLocation( km_class, status );
          }
