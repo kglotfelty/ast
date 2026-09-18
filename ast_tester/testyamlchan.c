@@ -31,6 +31,7 @@ static void test_native_encoding_roundtrip( int *status );
 static void test_sphmap_roundtrip( int *status );
 static void test_divide_roundtrip( int *status );
 static void test_rotate_sequence_3d_roundtrip( int *status );
+static void test_linear1d( int *status );
 
 static int chrMatch( const char *a, const char *b ){
    int result = 0;
@@ -55,6 +56,7 @@ int main(){
    test_sphmap_roundtrip( status );
    test_divide_roundtrip( status );
    test_rotate_sequence_3d_roundtrip( status );
+   test_linear1d( status );
 
    astEnd;
 
@@ -705,4 +707,48 @@ void test_rotate_sequence_3d_roundtrip( int *status ){
 
    if( *status != SAI__OK )
       printf( "rotate_sequence_3d and null-transform regression test failed\n" );
+}
+
+void test_linear1d( int *status ){
+/* An ASDF linear1d with slope 3 and offset 7 must map x to 3x + 7. The
+   WinMap it becomes was previously built with one of its four bounds
+   uninitialised, so the mapping was whatever the stack happened to hold. */
+   double in[ 3 ] = { 0.0, 1.0, 2.0 };
+   double expected[ 3 ] = { 7.0, 10.0, 13.0 };
+   double out[ 3 ];
+   AstFrameSet *fs;
+   AstMapping *map;
+   AstYamlChan *ch;
+   int i;
+
+   if( *status != SAI__OK )
+      return;
+
+   ch = astYamlChan( NULL, NULL, " " );
+   astSet( ch, "SourceFile=%s/fixtures/programs/testyamlchan/linear1d.asdf",
+           fixture_dir() );
+   fs = (AstFrameSet *) astRead( ch );
+   ch = astAnnul( ch );
+   if( !fs ) {
+      stopit( 100, status );
+      return;
+   }
+
+   map = astGetMapping( fs, AST__BASE, AST__CURRENT );
+   fs = astAnnul( fs );
+   astTran1( map, 3, in, 1, out );
+   map = astAnnul( map );
+
+   for( i = 0; i < 3; i++ ){
+      if( fabs( out[ i ] - expected[ i ] ) > 1.0E-10 ){
+         if( *status == SAI__OK )
+            printf( "linear1d(%g): got %.15g expected %.15g\n", in[ i ],
+                    out[ i ], expected[ i ] );
+         stopit( 101 + i, status );
+         break;
+      }
+   }
+
+   if( *status != SAI__OK )
+      printf( "linear1d regression test failed\n" );
 }

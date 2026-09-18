@@ -1,0 +1,22 @@
+#ASDF 1.0.0
+%YAML 1.1
+%TAG ! tag:stsci.edu:asdf/
+--- !core/asdf-1.1.0
+wcs: !<tag:stsci.edu:gwcs/wcs-1.0.0>
+  name: ''
+  steps:
+  - !<tag:stsci.edu:gwcs/step-1.0.0>
+    frame: !<tag:stsci.edu:gwcs/frame-1.0.0>
+      axes_names: [x]
+      axes_order: [0]
+      name: input
+    transform: !transform/linear1d-1.0.0
+      slope: 3.0
+      intercept: 0.0
+      offset: 7.0
+  - !<tag:stsci.edu:gwcs/step-1.0.0>
+    frame: !<tag:stsci.edu:gwcs/frame-1.0.0>
+      axes_names: [y]
+      axes_order: [0]
+      name: output
+    transform: null

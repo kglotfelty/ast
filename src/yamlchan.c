@@ -8347,10 +8347,12 @@ static AstMapping *ReadLinear1d( AstKeyMap *km, int *status ){
 
 /* Ortherwise, create a corresponding winmap. */
       } else {
+/* A 1-D WinMap maps [ina,inb] linearly onto [outa,outb], so x=0 and x=1
+   give y = slope*x + offset directly, for any offset. */
          ina = 0.0;
          outa = offset;
-         inb = offset/slope;
-         outa = 2*offset;
+         inb = 1.0;
+         outb = slope + offset;
          result = (AstMapping *) astWinMap( 1, &ina, &inb, &outa, &outb,
                                             " ", status );
       }
